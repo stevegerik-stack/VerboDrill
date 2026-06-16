@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VerboDrill">
+<meta name="theme-color" content="#0a0f1a">
+<title>VerboDrill — Spanish Verb Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:         #0a0f1a;
+  --bg2:        #0d1424;
+  --bg3:        #111827;
+  --bg4:        #1a2235;
+  --border:     rgba(255,255,255,0.06);
+  --border2:    rgba(255,255,255,0.11);
+  --accent:     #34d399;
+  --accent-dim: rgba(52,211,153,0.10);
+  --accent-dim2:rgba(52,211,153,0.05);
+  --accent-glow:rgba(52,211,153,0.35);
+  --indigo:     #818cf8;
+  --indigo-dim: rgba(129,140,248,0.12);
+  --amber:      #fbbf24;
+  --amber-dim:  rgba(251,191,36,0.12);
+  --red:        #f87171;
+  --red-dim:    rgba(248,113,113,0.10);
+  --text:       #e2e8f0;
+  --muted:      #64748b;
+  --dim:        #334155;
+  --sans:       'DM Sans', sans-serif;
+  --mono:       'Space Mono', monospace;
+  --serif:      'Playfair Display', Georgia, serif;
+  --r:          8px;
+  --rl:         14px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  background-image:
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(52,211,153,0.07) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 30% at 90% 90%, rgba(129,140,248,0.05) 0%, transparent 60%);
+}
+
+/* Grain */
+body::after {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  opacity: 0.5;
+}
+
+.shell { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+
+/* ── HEADER ── */
+header {
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem;
+  padding-top: env(safe-area-inset-top, 0);
+  display: flex; align-items: center; justify-content: space-between;
+  height: 58px; position: sticky; top: 0; z-index: 100;
+  background: rgba(10,15,26,0.90);
+  backdrop-filter: blur(14px);
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-mark {
+  width: 28px; height: 28px; border-radius: 6px;
+  background: var(--accent-dim);
+  border: 1px solid rgba(52,211,153,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 11px; font-weight: 700;
+  color: var(--accent); flex-shrink: 0;
+}
+.logo-name { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+.logo-name span { color: var(--accent); }
+.logo-sub { font-size: 10px; color: var(--muted); font-family: var(--mono); letter-spacing: 0.08em; }
+
+/* Stats bar */
+.stats-bar { display: flex; align-items: center; gap: 20px; }
+.stat { text-align: center; }
+.stat-val { font-family: var(--mono); font-size: 16px; font-weight: 700; color: var(--accent); line-height: 1; }
+.stat-val.dim { color: var(--text); }
+.stat-label { font-size: 9px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; font-family: var(--mono); }
+.stat-sep { width: 1px; height: 28px; background: var(--border); }
+
+/* ── MAIN ── */
+main { flex: 1; max-width: 720px; margin: 0 auto; width: 100%; padding: 2rem 1.25rem 3rem; }
+
+/* ── FILTERS ── */
+.filters-wrap {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--rl);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+}
+.filter-group { display: flex; align-items: center; gap: 7px; }
+.filter-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.filter-select {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r); color: var(--text);
+  font-family: var(--sans); font-size: 13px;
+  padding: 6px 28px 6px 10px; outline: none; cursor: pointer;
+  appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%2364748b' d='M5 7L0.5 2.5h9z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 9px center;
+  transition: border-color 0.15s;
+}
+.filter-select:focus { border-color: var(--accent); }
+.filter-select option { background: #1e293b; }
+
+.btn-reset {
+  margin-left: auto;
+  background: transparent; color: var(--muted); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 6px 12px; font-size: 12px;
+  font-family: var(--mono); cursor: pointer; transition: color 0.15s, border-color 0.15s;
+  letter-spacing: 0.04em;
+}
+.btn-reset:hover { color: var(--text); border-color: var(--border2); }
+
+/* ── PROGRESS BAR ── */
+.progress-wrap { margin-bottom: 1.25rem; }
+.progress-bg { height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.progress-fill {
+  height: 100%; border-radius: 99px;
+  background: linear-gradient(90deg, var(--accent), #6ee7b7);
+  box-shadow: 0 0 8px var(--accent-glow);
+  transition: width 0.5s cubic-bezier(0.16,1,0.3,1);
+  width: 0%;
+}
+
+/* ── CARD ── */
+.card {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--rl);
+  padding: 1.75rem;
+  position: relative; overflow: hidden;
+}
+.card::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px;
+  background: linear-gradient(135deg, rgba(52,211,153,0.2) 0%, transparent 50%, rgba(129,140,248,0.1) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+}
+
+/* Prompt area */
+.prompt-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 1.1rem; flex-wrap: wrap; }
+.badge {
+  font-family: var(--mono); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 99px; border: 1px solid;
+}
+.badge-tense { color: var(--accent); border-color: rgba(52,211,153,0.3); background: var(--accent-dim); }
+.badge-pronoun { color: var(--amber); border-color: rgba(251,191,36,0.3); background: var(--amber-dim); }
+.badge-verb { color: var(--indigo); border-color: rgba(129,140,248,0.3); background: var(--indigo-dim); }
+
+.prompt-en {
+  font-size: clamp(1.45rem, 4.5vw, 2.1rem);
+  font-weight: 500; line-height: 1.25; letter-spacing: -0.01em;
+  color: var(--text); margin-bottom: 0.25rem;
+}
+.prompt-hint { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-bottom: 1.5rem; }
+
+/* Divider */
+.card-divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+
+/* Input */
+.input-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; display: block; }
+.answer-input {
+  width: 100%;
+  background: var(--bg2); border: 1.5px solid var(--border);
+  border-radius: var(--r); color: var(--text);
+  font-family: var(--mono); font-size: 1.05rem;
+  padding: 0.8rem 1rem; outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.answer-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(52,211,153,0.12); }
+.answer-input.correct { border-color: var(--accent); background: rgba(52,211,153,0.06); box-shadow: 0 0 0 3px rgba(52,211,153,0.12); }
+.answer-input.wrong { border-color: var(--red); background: var(--red-dim); box-shadow: 0 0 0 3px rgba(248,113,113,0.12); }
+
+/* Buttons */
+.btn-row { display: flex; gap: 8px; margin-top: 1rem; flex-wrap: wrap; }
+.btn-primary {
+  flex: 1; min-width: 150px;
+  background: var(--accent); color: #052e16; border: none;
+  border-radius: var(--r); padding: 0.8rem 1.5rem;
+  font-size: 14px; font-weight: 600; font-family: var(--sans); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  transition: background 0.15s, transform 0.1s, box-shadow 0.2s;
+  box-shadow: 0 0 20px rgba(52,211,153,0.2);
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-primary:hover { background: #6ee7b7; box-shadow: 0 0 30px rgba(52,211,153,0.35); }
+.btn-primary:active { transform: scale(0.97); }
+.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+.btn-sec {
+  background: transparent; color: var(--muted); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 0.75rem 1rem;
+  font-size: 13px; font-family: var(--sans); cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  white-space: nowrap; -webkit-tap-highlight-color: transparent;
+}
+.btn-sec:hover { color: var(--text); border-color: var(--border2); background: rgba(255,255,255,0.03); }
+.btn-sec:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.btn-spoke {
+  background: var(--accent-dim); color: var(--accent);
+  border: 1px solid rgba(52,211,153,0.25);
+  border-radius: var(--r); padding: 0.75rem 1rem;
+  font-size: 13px; font-family: var(--sans); cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap; -webkit-tap-highlight-color: transparent;
+}
+.btn-spoke:hover { background: rgba(52,211,153,0.18); border-color: rgba(52,211,153,0.4); }
+.btn-spoke:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ── ANSWER PANEL ── */
+.answer-panel { display: none; margin-top: 1.5rem; }
+.answer-panel.show { display: block; animation: revealUp 0.35s cubic-bezier(0.16,1,0.3,1); }
+
+.answer-reveal-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.answer-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.answer-word {
+  font-family: var(--mono); font-size: clamp(2rem, 7vw, 3.2rem);
+  font-weight: 700; color: var(--accent); line-height: 1.05; letter-spacing: -0.02em;
+  text-shadow: 0 0 30px rgba(52,211,153,0.4);
+}
+.feedback-icon { font-size: 2rem; flex-shrink: 0; margin-top: 4px; }
+
+.user-wrote { font-size: 12px; font-family: var(--mono); margin-bottom: 0.75rem; min-height: 1.2rem; }
+.user-wrote.correct { color: var(--accent); }
+.user-wrote.wrong { color: var(--red); }
+.user-wrote.spoken { color: var(--accent); }
+
+/* Breakdown box */
+.breakdown {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 1rem 1.1rem; margin-bottom: 1rem;
+}
+.breakdown-title { font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.65rem; }
+.breakdown-chain { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-family: var(--mono); font-size: 13px; margin-bottom: 0.75rem; }
+.bc-item { padding: 3px 9px; border-radius: 5px; border: 1px solid; }
+.bc-inf   { color: var(--accent); border-color: rgba(52,211,153,0.3); background: var(--accent-dim); }
+.bc-tense { color: var(--indigo); border-color: rgba(129,140,248,0.3); background: var(--indigo-dim); }
+.bc-pron  { color: var(--amber); border-color: rgba(251,191,36,0.3); background: var(--amber-dim); }
+.bc-form  { color: var(--text); border-color: var(--border2); background: rgba(255,255,255,0.05); font-weight: 700; }
+.bc-arrow { color: var(--dim); font-size: 11px; }
+
+/* AI explanation */
+.ai-explanation { font-size: 13.5px; line-height: 1.7; color: var(--text); }
+.ai-loading { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; font-family: var(--mono); }
+.ai-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); animation: pulse 1.2s ease-in-out infinite; }
+.ai-dot:nth-child(2) { animation-delay: 0.2s; }
+.ai-dot:nth-child(3) { animation-delay: 0.4s; }
+
+.btn-next {
+  width: 100%; margin-top: 1.1rem;
+  background: var(--accent); color: #052e16; border: none;
+  border-radius: var(--r); padding: 0.85rem 1.5rem;
+  font-size: 14px; font-weight: 600; font-family: var(--sans); cursor: pointer;
+  transition: background 0.15s; letter-spacing: 0.01em;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-next:hover { background: #6ee7b7; }
+
+/* ── KEYBOARD HINT ── */
+.kbd-hint {
+  text-align: center; margin-top: 1.5rem;
+  font-size: 11px; color: var(--dim); font-family: var(--mono); letter-spacing: 0.05em;
+}
+kbd {
+  background: var(--bg4); border: 1px solid var(--border2);
+  border-radius: 4px; padding: 1px 6px; font-size: 10px; font-family: var(--mono);
+  color: var(--muted);
+}
+
+/* ── ANIMATIONS ── */
+@keyframes revealUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%,60% { transform: translateX(-5px); }
+  40%,80% { transform: translateX(5px); }
+}
+@keyframes pulse {
+  0%,100% { opacity: 0.3; transform: scale(0.8); }
+  50%      { opacity: 1;   transform: scale(1.2); }
+}
+@keyframes countPop {
+  from { transform: scale(1.4); opacity: 0.5; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.shake { animation: shake 0.32s ease; }
+.count-pop { animation: countPop 0.25s ease; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 480px) {
+  .btn-row { flex-direction: column; }
+  .btn-primary { min-width: unset; }
+  .stats-bar { gap: 12px; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-mark">Vb</div>
+      <div>
+        <div class="logo-name">Verbo<span>Drill</span></div>
+        <div class="logo-sub">Audio-Lingual Trainer</div>
+      </div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-val" id="streakVal">0</div>
+        <div class="stat-label">Streak 🔥</div>
+      </div>
+      <div class="stat-sep"></div>
+      <div class="stat">
+        <div class="stat-val dim" id="scoreVal">0/0</div>
+        <div class="stat-label">Score</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main>
+
+    <!-- FILTERS -->
+    <div class="filters-wrap">
+      <div class="filter-group">
+        <span class="filter-label">Tense</span>
+        <select class="filter-select" id="tenseFilter">
+          <option value="all">All Tenses</option>
+          <option value="Presente">Presente</option>
+          <option value="Pretérito">Pretérito</option>
+          <option value="Imperfecto">Imperfecto</option>
+          <option value="Futuro">Futuro</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Verb</span>
+        <select class="filter-select" id="verbFilter">
+          <option value="all">All Verbs</option>
+        </select>
+      </div>
+      <button class="btn-reset" id="resetBtn">↺ Reset</button>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress-wrap">
+      <div class="progress-bg"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <!-- MAIN CARD -->
+    <div class="card">
+
+      <!-- Prompt -->
+      <div id="promptArea">
+        <div class="prompt-meta" id="promptMeta">
+          <span class="badge badge-tense" id="badgeTense">—</span>
+          <span class="badge badge-pronoun" id="badgePronoun">—</span>
+          <span class="badge badge-verb" id="badgeVerb">—</span>
+        </div>
+        <div class="prompt-en" id="promptEn">Press "Check / Show" to begin your first card.</div>
+        <div class="prompt-hint" id="promptHint">&nbsp;</div>
+      </div>
+
+      <div class="card-divider"></div>
+
+      <!-- Input -->
+      <label class="input-label" for="answerInput">Your conjugation (or speak aloud, then mark correct)</label>
+      <input
+        type="text" id="answerInput" class="answer-input"
+        placeholder="Type the Spanish conjugation…"
+        autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
+      />
+
+      <!-- Buttons -->
+      <div class="btn-row">
+        <button class="btn-primary" id="checkBtn">
+          <span id="checkIcon">◉</span>
+          <span id="checkText">Check / Show Answer</span>
+        </button>
+        <button class="btn-spoke" id="spokeBtn" title="Mark as correct — I said it aloud">🎙 Spoke It</button>
+        <button class="btn-sec" id="skipBtn">Skip →</button>
+      </div>
+
+      <!-- Answer Panel -->
+      <div class="answer-panel" id="answerPanel">
+        <div class="card-divider"></div>
+
+        <div class="answer-reveal-row">
+          <div>
+            <div class="answer-label">Correct Answer</div>
+            <div class="answer-word" id="answerWord">—</div>
+          </div>
+          <div class="feedback-icon" id="feedbackIcon">—</div>
+        </div>
+
+        <div class="user-wrote" id="userWrote"></div>
+
+        <!-- Breakdown -->
+        <div class="breakdown">
+          <div class="breakdown-title">Grammatical Breakdown</div>
+          <div class="breakdown-chain" id="breakdownChain"></div>
+          <div id="aiExplanation" class="ai-explanation"></div>
+        </div>
+
+        <button class="btn-next" id="nextBtn">Next Card →</button>
+      </div>
+
+    </div>
+
+    <div class="kbd-hint">
+      <kbd>Enter</kbd> check &ensp;·&ensp; <kbd>Tab</kbd> skip &ensp;·&ensp; <kbd>Esc</kbd> clear
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ============================================================
+//  VERB DATA — 20 verbs × 4 tenses × 6 pronouns (hardcoded)
+// ============================================================
+const VERBS = {
+  ser:       { infinitive:'ser',       english:'to be (permanent)',
+    tenses:{ Presente:{yo:'soy',tú:'eres','él/ella':'es',nosotros:'somos',vosotros:'sois','ellos/ellas':'son'}, Pretérito:{yo:'fui',tú:'fuiste','él/ella':'fue',nosotros:'fuimos',vosotros:'fuisteis','ellos/ellas':'fueron'}, Imperfecto:{yo:'era',tú:'eras','él/ella':'era',nosotros:'éramos',vosotros:'erais','ellos/ellas':'eran'}, Futuro:{yo:'seré',tú:'serás','él/ella':'será',nosotros:'seremos',vosotros:'seréis','ellos/ellas':'serán'} }},
+  estar:     { infinitive:'estar',     english:'to be (temporary)',
+    tenses:{ Presente:{yo:'estoy',tú:'estás','él/ella':'está',nosotros:'estamos',vosotros:'estáis','ellos/ellas':'están'}, Pretérito:{yo:'estuve',tú:'estuviste','él/ella':'estuvo',nosotros:'estuvimos',vosotros:'estuvisteis','ellos/ellas':'estuvieron'}, Imperfecto:{yo:'estaba',tú:'estabas','él/ella':'estaba',nosotros:'estábamos',vosotros:'estabais','ellos/ellas':'estaban'}, Futuro:{yo:'estaré',tú:'estarás','él/ella':'estará',nosotros:'estaremos',vosotros:'estaréis','ellos/ellas':'estarán'} }},
+  tener:     { infinitive:'tener',     english:'to have',
+    tenses:{ Presente:{yo:'tengo',tú:'tienes','él/ella':'tiene',nosotros:'tenemos',vosotros:'tenéis','ellos/ellas':'tienen'}, Pretérito:{yo:'tuve',tú:'tuviste','él/ella':'tuvo',nosotros:'tuvimos',vosotros:'tuvisteis','ellos/ellas':'tuvieron'}, Imperfecto:{yo:'tenía',tú:'tenías','él/ella':'tenía',nosotros:'teníamos',vosotros:'teníais','ellos/ellas':'tenían'}, Futuro:{yo:'tendré',tú:'tendrás','él/ella':'tendrá',nosotros:'tendremos',vosotros:'tendréis','ellos/ellas':'tendrán'} }},
+  hacer:     { infinitive:'hacer',     english:'to do / make',
+    tenses:{ Presente:{yo:'hago',tú:'haces','él/ella':'hace',nosotros:'hacemos',vosotros:'hacéis','ellos/ellas':'hacen'}, Pretérito:{yo:'hice',tú:'hiciste','él/ella':'hizo',nosotros:'hicimos',vosotros:'hicisteis','ellos/ellas':'hicieron'}, Imperfecto:{yo:'hacía',tú:'hacías','él/ella':'hacía',nosotros:'hacíamos',vosotros:'hacíais','ellos/ellas':'hacían'}, Futuro:{yo:'haré',tú:'harás','él/ella':'hará',nosotros:'haremos',vosotros:'haréis','ellos/ellas':'harán'} }},
+  ir:        { infinitive:'ir',        english:'to go',
+    tenses:{ Presente:{yo:'voy',tú:'vas','él/ella':'va',nosotros:'vamos',vosotros:'vais','ellos/ellas':'van'}, Pretérito:{yo:'fui',tú:'fuiste','él/ella':'fue',nosotros:'fuimos',vosotros:'fuisteis','ellos/ellas':'fueron'}, Imperfecto:{yo:'iba',tú:'ibas','él/ella':'iba',nosotros:'íbamos',vosotros:'ibais','ellos/ellas':'iban'}, Futuro:{yo:'iré',tú:'irás','él/ella':'irá',nosotros:'iremos',vosotros:'iréis','ellos/ellas':'irán'} }},
+  poder:     { infinitive:'poder',     english:'to be able to / can',
+    tenses:{ Presente:{yo:'puedo',tú:'puedes','él/ella':'puede',nosotros:'podemos',vosotros:'podéis','ellos/ellas':'pueden'}, Pretérito:{yo:'pude',tú:'pudiste','él/ella':'pudo',nosotros:'pudimos',vosotros:'pudisteis','ellos/ellas':'pudieron'}, Imperfecto:{yo:'podía',tú:'podías','él/ella':'podía',nosotros:'podíamos',vosotros:'podíais','ellos/ellas':'podían'}, Futuro:{yo:'podré',tú:'podrás','él/ella':'podrá',nosotros:'podremos',vosotros:'podréis','ellos/ellas':'podrán'} }},
+  saber:     { infinitive:'saber',     english:'to know (facts)',
+    tenses:{ Presente:{yo:'sé',tú:'sabes','él/ella':'sabe',nosotros:'sabemos',vosotros:'sabéis','ellos/ellas':'saben'}, Pretérito:{yo:'supe',tú:'supiste','él/ella':'supo',nosotros:'supimos',vosotros:'supisteis','ellos/ellas':'supieron'}, Imperfecto:{yo:'sabía',tú:'sabías','él/ella':'sabía',nosotros:'sabíamos',vosotros:'sabíais','ellos/ellas':'sabían'}, Futuro:{yo:'sabré',tú:'sabrás','él/ella':'sabrá',nosotros:'sabremos',vosotros:'sabréis','ellos/ellas':'sabrán'} }},
+  decir:     { infinitive:'decir',     english:'to say / tell',
+    tenses:{ Presente:{yo:'digo',tú:'dices','él/ella':'dice',nosotros:'decimos',vosotros:'decís','ellos/ellas':'dicen'}, Pretérito:{yo:'dije',tú:'dijiste','él/ella':'dijo',nosotros:'dijimos',vosotros:'dijisteis','ellos/ellas':'dijeron'}, Imperfecto:{yo:'decía',tú:'decías','él/ella':'decía',nosotros:'decíamos',vosotros:'decíais','ellos/ellas':'decían'}, Futuro:{yo:'diré',tú:'dirás','él/ella':'dirá',nosotros:'diremos',vosotros:'diréis','ellos/ellas':'dirán'} }},
+  querer:    { infinitive:'querer',    english:'to want / love',
+    tenses:{ Presente:{yo:'quiero',tú:'quieres','él/ella':'quiere',nosotros:'queremos',vosotros:'queréis','ellos/ellas':'quieren'}, Pretérito:{yo:'quise',tú:'quisiste','él/ella':'quiso',nosotros:'quisimos',vosotros:'quisisteis','ellos/ellas':'quisieron'}, Imperfecto:{yo:'quería',tú:'querías','él/ella':'quería',nosotros:'queríamos',vosotros:'queríais','ellos/ellas':'querían'}, Futuro:{yo:'querré',tú:'querrás','él/ella':'querrá',nosotros:'querremos',vosotros:'querréis','ellos/ellas':'querrán'} }},
+  pasar:     { infinitive:'pasar',     english:'to pass / happen',
+    tenses:{ Presente:{yo:'paso',tú:'pasas','él/ella':'pasa',nosotros:'pasamos',vosotros:'pasáis','ellos/ellas':'pasan'}, Pretérito:{yo:'pasé',tú:'pasaste','él/ella':'pasó',nosotros:'pasamos',vosotros:'pasasteis','ellos/ellas':'pasaron'}, Imperfecto:{yo:'pasaba',tú:'pasabas','él/ella':'pasaba',nosotros:'pasábamos',vosotros:'pasabais','ellos/ellas':'pasaban'}, Futuro:{yo:'pasaré',tú:'pasarás','él/ella':'pasará',nosotros:'pasaremos',vosotros:'pasaréis','ellos/ellas':'pasarán'} }},
+  deber:     { infinitive:'deber',     english:'to owe / must / should',
+    tenses:{ Presente:{yo:'debo',tú:'debes','él/ella':'debe',nosotros:'debemos',vosotros:'debéis','ellos/ellas':'deben'}, Pretérito:{yo:'debí',tú:'debiste','él/ella':'debió',nosotros:'debimos',vosotros:'debisteis','ellos/ellas':'debieron'}, Imperfecto:{yo:'debía',tú:'debías','él/ella':'debía',nosotros:'debíamos',vosotros:'debíais','ellos/ellas':'debían'}, Futuro:{yo:'deberé',tú:'deberás','él/ella':'deberá',nosotros:'deberemos',vosotros:'deberéis','ellos/ellas':'deberán'} }},
+  llegar:    { infinitive:'llegar',    english:'to arrive',
+    tenses:{ Presente:{yo:'llego',tú:'llegas','él/ella':'llega',nosotros:'llegamos',vosotros:'llegáis','ellos/ellas':'llegan'}, Pretérito:{yo:'llegué',tú:'llegaste','él/ella':'llegó',nosotros:'llegamos',vosotros:'llegasteis','ellos/ellas':'llegaron'}, Imperfecto:{yo:'llegaba',tú:'llegabas','él/ella':'llegaba',nosotros:'llegábamos',vosotros:'llegabais','ellos/ellas':'llegaban'}, Futuro:{yo:'llegaré',tú:'llegarás','él/ella':'llegará',nosotros:'llegaremos',vosotros:'llegaréis','ellos/ellas':'llegarán'} }},
+  creer:     { infinitive:'creer',     english:'to believe / think',
+    tenses:{ Presente:{yo:'creo',tú:'crees','él/ella':'cree',nosotros:'creemos',vosotros:'creéis','ellos/ellas':'creen'}, Pretérito:{yo:'creí',tú:'creíste','él/ella':'creyó',nosotros:'creímos',vosotros:'creísteis','ellos/ellas':'creyeron'}, Imperfecto:{yo:'creía',tú:'creías','él/ella':'creía',nosotros:'creíamos',vosotros:'creíais','ellos/ellas':'creían'}, Futuro:{yo:'creeré',tú:'creerás','él/ella':'creerá',nosotros:'creeremos',vosotros:'creeréis','ellos/ellas':'creerán'} }},
+  encontrar: { infinitive:'encontrar', english:'to find / meet',
+    tenses:{ Presente:{yo:'encuentro',tú:'encuentras','él/ella':'encuentra',nosotros:'encontramos',vosotros:'encontráis','ellos/ellas':'encuentran'}, Pretérito:{yo:'encontré',tú:'encontraste','él/ella':'encontró',nosotros:'encontramos',vosotros:'encontrasteis','ellos/ellas':'encontraron'}, Imperfecto:{yo:'encontraba',tú:'encontrabas','él/ella':'encontraba',nosotros:'encontrábamos',vosotros:'encontrabais','ellos/ellas':'encontraban'}, Futuro:{yo:'encontraré',tú:'encontrarás','él/ella':'encontrará',nosotros:'encontraremos',vosotros:'encontraréis','ellos/ellas':'encontrarán'} }},
+  hablar:    { infinitive:'hablar',    english:'to speak / talk',
+    tenses:{ Presente:{yo:'hablo',tú:'hablas','él/ella':'habla',nosotros:'hablamos',vosotros:'habláis','ellos/ellas':'hablan'}, Pretérito:{yo:'hablé',tú:'hablaste','él/ella':'habló',nosotros:'hablamos',vosotros:'hablasteis','ellos/ellas':'hablaron'}, Imperfecto:{yo:'hablaba',tú:'hablabas','él/ella':'hablaba',nosotros:'hablábamos',vosotros:'hablabais','ellos/ellas':'hablaban'}, Futuro:{yo:'hablaré',tú:'hablarás','él/ella':'hablará',nosotros:'hablaremos',vosotros:'hablaréis','ellos/ellas':'hablarán'} }},
+  llevar:    { infinitive:'llevar',    english:'to carry / wear / take',
+    tenses:{ Presente:{yo:'llevo',tú:'llevas','él/ella':'lleva',nosotros:'llevamos',vosotros:'lleváis','ellos/ellas':'llevan'}, Pretérito:{yo:'llevé',tú:'llevaste','él/ella':'llevó',nosotros:'llevamos',vosotros:'llevasteis','ellos/ellas':'llevaron'}, Imperfecto:{yo:'llevaba',tú:'llevabas','él/ella':'llevaba',nosotros:'llevábamos',vosotros:'llevabais','ellos/ellas':'llevaban'}, Futuro:{yo:'llevaré',tú:'llevarás','él/ella':'llevará',nosotros:'llevaremos',vosotros:'llevaréis','ellos/ellas':'llevarán'} }},
+  quedar:    { infinitive:'quedar',    english:'to stay / remain / meet up',
+    tenses:{ Presente:{yo:'quedo',tú:'quedas','él/ella':'queda',nosotros:'quedamos',vosotros:'quedáis','ellos/ellas':'quedan'}, Pretérito:{yo:'quedé',tú:'quedaste','él/ella':'quedó',nosotros:'quedamos',vosotros:'quedasteis','ellos/ellas':'quedaron'}, Imperfecto:{yo:'quedaba',tú:'quedabas','él/ella':'quedaba',nosotros:'quedábamos',vosotros:'quedabais','ellos/ellas':'quedaban'}, Futuro:{yo:'quedaré',tú:'quedarás','él/ella':'quedará',nosotros:'quedaremos',vosotros:'quedaréis','ellos/ellas':'quedarán'} }},
+  venir:     { infinitive:'venir',     english:'to come',
+    tenses:{ Presente:{yo:'vengo',tú:'vienes','él/ella':'viene',nosotros:'venimos',vosotros:'venís','ellos/ellas':'vienen'}, Pretérito:{yo:'vine',tú:'viniste','él/ella':'vino',nosotros:'vinimos',vosotros:'vinisteis','ellos/ellas':'vinieron'}, Imperfecto:{yo:'venía',tú:'venías','él/ella':'venía',nosotros:'veníamos',vosotros:'veníais','ellos/ellas':'venían'}, Futuro:{yo:'vendré',tú:'vendrás','él/ella':'vendrá',nosotros:'vendremos',vosotros:'vendréis','ellos/ellas':'vendrán'} }},
+  pensar:    { infinitive:'pensar',    english:'to think / plan',
+    tenses:{ Presente:{yo:'pienso',tú:'piensas','él/ella':'piensa',nosotros:'pensamos',vosotros:'pensáis','ellos/ellas':'piensan'}, Pretérito:{yo:'pensé',tú:'pensaste','él/ella':'pensó',nosotros:'pensamos',vosotros:'pensasteis','ellos/ellas':'pensaron'}, Imperfecto:{yo:'pensaba',tú:'pensabas','él/ella':'pensaba',nosotros:'pensábamos',vosotros:'pensabais','ellos/ellas':'pensaban'}, Futuro:{yo:'pensaré',tú:'pensarás','él/ella':'pensará',nosotros:'pensaremos',vosotros:'pensaréis','ellos/ellas':'pensarán'} }},
+  salir:     { infinitive:'salir',     english:'to leave / go out',
+    tenses:{ Presente:{yo:'salgo',tú:'sales','él/ella':'sale',nosotros:'salimos',vosotros:'salís','ellos/ellas':'salen'}, Pretérito:{yo:'salí',tú:'saliste','él/ella':'salió',nosotros:'salimos',vosotros:'salisteis','ellos/ellas':'salieron'}, Imperfecto:{yo:'salía',tú:'salías','él/ella':'salía',nosotros:'salíamos',vosotros:'salíais','ellos/ellas':'salían'}, Futuro:{yo:'saldré',tú:'saldrás','él/ella':'saldrá',nosotros:'saldremos',vosotros:'saldréis','ellos/ellas':'saldrán'} }},
+};
+
+const TENSES   = ['Presente','Pretérito','Imperfecto','Futuro'];
+const PRONOUNS = ['yo','tú','él/ella','nosotros','vosotros','ellos/ellas'];
+const VERB_KEYS = Object.keys(VERBS);
+
+const PRONOUN_EN = { yo:'I', tú:'you', 'él/ella':'he/she', nosotros:'we', vosotros:'you all', 'ellos/ellas':'they' };
+
+// ── State ──
+let state = { current:null, answered:false, streak:0, total:0, correct:0 };
+
+// ── DOM ──
+const $tense   = document.getElementById('tenseFilter');
+const $verb    = document.getElementById('verbFilter');
+const $reset   = document.getElementById('resetBtn');
+const $promptEn= document.getElementById('promptEn');
+const $promptH = document.getElementById('promptHint');
+const $bTense  = document.getElementById('badgeTense');
+const $bPron   = document.getElementById('badgePronoun');
+const $bVerb   = document.getElementById('badgeVerb');
+const $input   = document.getElementById('answerInput');
+const $checkBtn= document.getElementById('checkBtn');
+const $checkTxt= document.getElementById('checkText');
+const $checkIco= document.getElementById('checkIcon');
+const $spokeBtn= document.getElementById('spokeBtn');
+const $skipBtn = document.getElementById('skipBtn');
+const $panel   = document.getElementById('answerPanel');
+const $aWord   = document.getElementById('answerWord');
+const $fIcon   = document.getElementById('feedbackIcon');
+const $uWrote  = document.getElementById('userWrote');
+const $bChain  = document.getElementById('breakdownChain');
+const $aiExp   = document.getElementById('aiExplanation');
+const $nextBtn = document.getElementById('nextBtn');
+const $strVal  = document.getElementById('streakVal');
+const $scoreV  = document.getElementById('scoreVal');
+const $progFill= document.getElementById('progressFill');
+
+// ── Init verb dropdown ──
+function initDropdown() {
+  VERB_KEYS.forEach(k => {
+    const o = document.createElement('option');
+    o.value = k;
+    o.textContent = VERBS[k].infinitive.charAt(0).toUpperCase() + VERBS[k].infinitive.slice(1);
+    $verb.appendChild(o);
+  });
+}
+
+// ── Pool ──
+function getPool() {
+  const t = $tense.value; const v = $verb.value;
+  const verbs  = v === 'all' ? VERB_KEYS : [v];
+  const tenses = t === 'all' ? TENSES    : [t];
+  const pool = [];
+  verbs.forEach(vk => tenses.forEach(ten => PRONOUNS.forEach(pr => pool.push({verbKey:vk,tense:ten,pronoun:pr}))));
+  return pool;
+}
+
+function pickCard(pool) {
+  if (!pool.length) return null;
+  let item, tries = 0;
+  do { item = pool[Math.floor(Math.random() * pool.length)]; tries++; }
+  while (state.current && item.verbKey===state.current.verbKey && item.tense===state.current.tense && item.pronoun===state.current.pronoun && tries < 10);
+  return item;
+}
+
+// ── English prompt ──
+function buildPrompt(vd, tense, pronoun) {
+  const base = vd.english.split(' / ')[0].replace('to ','');
+  const who = PRONOUN_EN[pronoun];
+  if (tense === 'Presente')   return `"${cap(who)} ${conjugateEn(base, pronoun)}"`;
+  if (tense === 'Pretérito')  return `"${cap(who)} ${pastEn(vd, pronoun)}"`;
+  if (tense === 'Imperfecto') return `"${cap(who)} used to ${base}"`;
+  if (tense === 'Futuro')     return `"${cap(who)} will ${base}"`;
+  return `"${cap(who)} ${base}"`;
+}
+
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+function conjugateEn(base, pronoun) {
+  if (pronoun === 'él/ella') return base.endsWith('e') ? base+'s' : base.endsWith('y') ? base.slice(0,-1)+'ies' : base+'s';
+  return base;
+}
+function pastEn(vd, pronoun) {
+  const irregs = { 'be (permanent)':'was/were','be (temporary)':'was/were',have:'had','do':'did',make:'made',go:'went','say':'said',tell:'told',want:'wanted',come:'came',think:'thought',leave:'left',know:'knew' };
+  for (const [k,v] of Object.entries(irregs)) { if (vd.english.includes(k)) return v; }
+  const b = vd.english.replace('to ','').split(' / ')[0];
+  return b.endsWith('e') ? b+'d' : b+'ed';
+}
+
+// ── Load card ──
+function loadCard(card) {
+  state.current = card;
+  state.answered = false;
+  const vd = VERBS[card.verbKey];
+
+  $bTense.textContent  = card.tense;
+  $bPron.textContent   = card.pronoun;
+  $bVerb.textContent   = vd.infinitive;
+  $promptEn.textContent= buildPrompt(vd, card.tense, card.pronoun);
+  $promptH.textContent = `(${card.tense}) — type the conjugation or speak it aloud`;
+
+  $input.value = '';
+  $input.className = 'answer-input';
+  $panel.classList.remove('show');
+  $uWrote.textContent = '';
+  $aiExp.innerHTML = '';
+
+  $checkBtn.disabled = false;
+  $spokeBtn.disabled = false;
+  $skipBtn.disabled  = false;
+  $checkTxt.textContent = 'Check / Show Answer';
+  $checkIco.textContent = '◉';
+
+  $input.focus();
+}
+
+function nextCard() { loadCard(pickCard(getPool())); }
+
+// ── Normalize (accent-tolerant) ──
+function norm(s) {
+  return s.trim().toLowerCase()
+    .replace(/á/g,'a').replace(/é/g,'e').replace(/í/g,'i').replace(/ó/g,'o').replace(/ú/g,'u').replace(/ü/g,'u').replace(/ñ/g,'n');
+}
+
+// ── Gemini AI explanation ──
+async function fetchAIExplanation(verbKey, tense, pronoun, form, userInput, isCorrect) {
+  const vd = VERBS[verbKey];
+
+  const prompt = `You are a concise Spanish grammar coach. A student is drilling verb conjugations.
+
+VERB: ${vd.infinitive} (${vd.english})
+TENSE: ${tense}
+PRONOUN: ${pronoun}
+CORRECT FORM: ${form}
+${userInput ? `STUDENT WROTE: "${userInput}" — ${isCorrect ? 'CORRECT ✓' : 'INCORRECT ✗'}` : 'Student did not type an answer.'}
+
+Write a short, punchy 2–3 sentence explanation (max 60 words) that:
+1. Explains WHY this form is "${form}" — highlight any irregularity, spelling change, stem change, or accent rule
+2. If the student was wrong, point out their specific mistake briefly
+3. Give one memorable tip or mnemonic if relevant
+
+Be direct, use simple language. No bullet points. No markdown headers. Plain prose only.`;
+
+  $aiExp.innerHTML = `<div class="ai-loading"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div><span style="margin-left:4px;">Gemini is explaining…</span></div>`;
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'gemini-2.5-flash', max_tokens: 200, prompt })
+    });
+
+    if (!res.ok) throw new Error('Server error');
+    const data = await res.json();
+    const text = data?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+    $aiExp.textContent = text.trim() || 'No explanation available.';
+  } catch (e) {
+    $aiExp.textContent = 'Could not load AI explanation. Check your GEMINI_API_KEY environment variable.';
+    $aiExp.style.color = 'var(--muted)';
+  }
+}
+
+// ── Check answer ──
+function checkAnswer(spokenCorrect = false) {
+  if (!state.current || state.answered) return;
+  state.answered = true;
+
+  const card = state.current;
+  const vd   = VERBS[card.verbKey];
+  const correctForm = vd.tenses[card.tense][card.pronoun];
+  const userRaw = $input.value.trim();
+
+  let isCorrect = spokenCorrect;
+  if (!spokenCorrect && userRaw.length > 0) {
+    isCorrect = norm(userRaw) === norm(correctForm);
+  }
+
+  state.total++;
+  if (isCorrect) { state.correct++; state.streak++; }
+  else { state.streak = 0; }
+
+  // Reveal panel
+  $aWord.textContent = correctForm;
+  $panel.classList.add('show');
+
+  // Input coloring
+  if (spokenCorrect) {
+    $input.className = 'answer-input correct';
+    $fIcon.textContent = '🎙️';
+    $uWrote.textContent = 'Marked as spoken correctly.';
+    $uWrote.className = 'user-wrote spoken';
+  } else if (userRaw.length === 0) {
+    $fIcon.textContent = '👁️';
+    $uWrote.textContent = '';
+  } else if (isCorrect) {
+    $input.className = 'answer-input correct';
+    $fIcon.textContent = '✅';
+    $uWrote.textContent = '¡Correcto!';
+    $uWrote.className = 'user-wrote correct';
+  } else {
+    $input.className = 'answer-input wrong';
+    $input.classList.add('shake');
+    setTimeout(() => $input.classList.remove('shake'), 350);
+    $fIcon.textContent = '❌';
+    $uWrote.textContent = `You wrote: "${userRaw}"`;
+    $uWrote.className = 'user-wrote wrong';
+  }
+
+  // Breakdown chain
+  $bChain.innerHTML = `
+    <span class="bc-item bc-inf">${vd.infinitive}</span>
+    <span class="bc-arrow">→</span>
+    <span class="bc-item bc-tense">${card.tense}</span>
+    <span class="bc-arrow">→</span>
+    <span class="bc-item bc-pron">${card.pronoun}</span>
+    <span class="bc-arrow">→</span>
+    <span class="bc-item bc-form">${correctForm}</span>
+  `;
+
+  // Fetch AI explanation
+  fetchAIExplanation(card.verbKey, card.tense, card.pronoun, correctForm, userRaw, isCorrect);
+
+  updateStats();
+
+  $checkBtn.disabled = true;
+  $spokeBtn.disabled = true;
+  $skipBtn.disabled  = true;
+  $checkTxt.textContent = 'Answer Shown';
+  $checkIco.textContent = '✓';
+}
+
+// ── Stats ──
+function updateStats() {
+  $strVal.textContent = state.streak;
+  $strVal.classList.add('count-pop');
+  setTimeout(() => $strVal.classList.remove('count-pop'), 300);
+  $strVal.style.color = state.streak >= 10 ? '#fbbf24' : state.streak >= 5 ? '#34d399' : '#34d399';
+
+  $scoreV.textContent = `${state.correct}/${state.total}`;
+  const pct = state.total > 0 ? Math.round((state.correct / state.total) * 100) : 0;
+  $progFill.style.width = pct + '%';
+}
+
+function resetSession() {
+  state.streak = 0; state.total = 0; state.correct = 0;
+  updateStats();
+  nextCard();
+}
+
+// ── Events ──
+$checkBtn.addEventListener('click', () => checkAnswer(false));
+$spokeBtn.addEventListener('click', () => checkAnswer(true));
+$skipBtn.addEventListener('click', () => { state.total++; updateStats(); nextCard(); });
+$nextBtn.addEventListener('click', nextCard);
+$reset.addEventListener('click', resetSession);
+$tense.addEventListener('change', nextCard);
+$verb.addEventListener('change', nextCard);
+
+$input.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); checkAnswer(false); }
+  if (e.key === 'Escape') { $input.value = ''; }
+  if (e.key === 'Tab') { e.preventDefault(); $skipBtn.click(); }
+});
+
+// ── Boot ──
+initDropdown();
+nextCard();
+updateStats();
+</script>
+</body>
+</html>
